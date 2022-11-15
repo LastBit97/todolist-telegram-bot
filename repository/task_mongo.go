@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/LastBit97/todolist-telegram-bot/model"
@@ -21,6 +22,7 @@ func NewTaskRepository(mongoCollection *mongo.Collection, ctx context.Context) T
 func (tm *TaskMongo) CreateTask(task *model.Task) error {
 	task.CreateAt = time.Now()
 	_, err := tm.tasksCollection.InsertOne(tm.ctx, task)
+	log.Print("task added")
 
 	if err != nil {
 		return err
@@ -29,8 +31,8 @@ func (tm *TaskMongo) CreateTask(task *model.Task) error {
 	return nil
 }
 
-func (tm *TaskMongo) GetTasks(chatId string) ([]*model.Task, error) {
-	query := bson.M{}
+func (tm *TaskMongo) GetTasks(chatId int64) ([]*model.Task, error) {
+	query := bson.M{"chat_id": chatId}
 
 	cursor, err := tm.tasksCollection.Find(tm.ctx, query)
 	if err != nil {

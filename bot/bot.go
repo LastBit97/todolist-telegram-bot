@@ -7,27 +7,32 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func StartBot(apiToken string) {
+func (h *Handler) StartBot(apiToken string) {
 	pref := tele.Settings{
 		Token:  apiToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
-	b, err := tele.NewBot(pref)
+	bot, err := tele.NewBot(pref)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	b.Handle("/start", func(c tele.Context) error {
-		return c.Send("Привет")
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+	btnTasks := menu.Text("ℹ Список задач")
+
+	menu.Reply(menu.Row(btnTasks))
+
+	bot.Handle("/start", func(ctx tele.Context) error {
+		return ctx.Send("Hello", menu)
 	})
 
-	b.Handle(tele.OnText, func(c tele.Context) error {
-		return c.Reply(c.Text())
-	})
+	bot.Handle(tele.OnText, h.addTask)
+
+	bot.Handle(&btnTasks, h.getTodoList)
 
 	log.Print("listen to telegram api")
-
-	b.Start()
+	bot.Start()
 }
