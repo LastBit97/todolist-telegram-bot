@@ -2,6 +2,7 @@ package bot
 
 import (
 	"log"
+	"strings"
 
 	"github.com/LastBit97/todolist-telegram-bot/model"
 	"github.com/LastBit97/todolist-telegram-bot/service"
@@ -26,7 +27,7 @@ func (h *Handler) addTask(ctx tele.Context) error {
 		log.Printf("error: %v", err)
 		return err
 	}
-	if err := ctx.Send("Task added"); err != nil {
+	if err := ctx.Send("Задача добавлена"); err != nil {
 		log.Printf("error: %v", err)
 		return err
 	}
@@ -41,8 +42,30 @@ func (h *Handler) getTodoList(ctx tele.Context) error {
 		return err
 	}
 
+	markup := &tele.ReplyMarkup{}
 	for _, task := range todoList {
-		if err := ctx.Send(task.Title); err != nil {
+
+		deleteBtn := markup.Data("Удалить", "delete", task.Id.Hex())
+		markup.Inline(markup.Row(deleteBtn))
+
+		if err := ctx.Send(task.Title, markup); err != nil {
+			log.Printf("error: %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (h *Handler) deleteTask(ctx tele.Context) error {
+	btnKind := strings.TrimSpace(ctx.Args()[0])
+
+	if btnKind == "delete" {
+		id := ctx.Args()[1]
+		if err := h.taskService.DeleteTask(id); err != nil {
+			log.Printf("error: %v", err)
+			return err
+		}
+		if err := ctx.Delete(); err != nil {
 			log.Printf("error: %v", err)
 			return err
 		}

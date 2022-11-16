@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"log"
-	"time"
 
 	"github.com/LastBit97/todolist-telegram-bot/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,7 +21,6 @@ func NewTaskRepository(mongoCollection *mongo.Collection, ctx context.Context) T
 }
 
 func (tm *TaskMongo) CreateTask(task *model.Task) error {
-	task.CreateAt = time.Now()
 	_, err := tm.tasksCollection.InsertOne(tm.ctx, task)
 	log.Print("task added")
 
@@ -63,4 +63,20 @@ func (tm *TaskMongo) GetTasks(chatId int64) ([]*model.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func (tm *TaskMongo) DeleteTask(taskId string) error {
+	obId, _ := primitive.ObjectIDFromHex(taskId)
+	query := bson.M{"_id": obId}
+
+	res, err := tm.tasksCollection.DeleteOne(tm.ctx, query)
+	if err != nil {
+		return err
+	}
+
+	if res.DeletedCount == 0 {
+		return errors.New("no task with that Id exists")
+	}
+
+	return nil
 }

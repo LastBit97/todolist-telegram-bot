@@ -20,3 +20,7 @@ func (ts *TaskServiceImpl) AddTask(task *model.Task) error {
 func (ts *TaskServiceImpl) GetTasks(chatId int64) ([]*model.Task, error) {
 	return ts.repo.GetTasks(chatId)
 }
+
+func (ts *TaskServiceImpl) DeleteTask(taskId string) error {
+	return ts.repo.DeleteTask(taskId)
+}
