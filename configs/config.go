@@ -4,7 +4,6 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	DBUri    string `mapstructure:"MONGODB_LOCAL_URI"`
-	Port     string `mapstructure:"PORT"`
 	ApiToken string `mapstructure:"API_TOKEN"`
 }
 
